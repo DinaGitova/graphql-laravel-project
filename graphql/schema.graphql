@@ -1,0 +1,103 @@
+"A datetime string with format `Y-m-d H:i:s`, e.g. `2018-01-01 13:00:00`."
+scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
+
+"A date string with format `Y-m-d`, e.g. `2011-05-23`."
+scalar Date @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Date")
+
+type Query {
+    users: [User!]! @paginate(defaultCount: 10)
+    user(id: ID @eq): User @find
+
+    employees: [Employee!]! @all
+    employee(employeeNumber: ID @eq): Employee @find
+
+    offices: [Office!]! @all
+    office(officeCode: ID @eq): Office @find
+
+}
+
+type Mutation {
+    createEmployee (
+        lastName: String! @rules(apply: ["required"])
+        firstName: String! @rules(apply: ["required"])
+        extension: String!
+        email: String! @rules(apply: ["required","email", "unique:employees,email"])
+        officeCode: Int!
+        reportsTo: Int
+        jobTitle: String!
+    ): Employee @create
+    updateEmployee(
+        employeeNumber: ID! @rules(apply:["required"])
+        lastName: String! @rules(apply: ["required"])
+        firstName: String! @rules(apply: ["required"])
+        extension: String!
+        email: String!
+        officeCode: Int!
+        reportsTo: Int
+        jobTitle: String!
+    ): Employee @update
+    deleteEmployee(
+        employeeNumber: ID! @rules(apply:["required"])
+    ): Employee @delete
+
+    createOffice(
+        city: String
+        phone: String
+        addressLine1: String!
+        addressLine2: String
+        state: String
+        country:String!
+        postalCode: String!
+        territory: String!
+    ): Office @create
+
+    updateOffice(
+        officeCode: ID! @rules(apply: ["required"])
+        city: String
+        phone: String
+        addressLine1: String
+        addressLine2: String
+        state: String
+        country:String
+        postalCode: String
+        territory: String
+    ): Office @update
+
+    deleteOffice (
+        officeCode: ID! @rules(apply: ["required"])
+    ): Office @delete
+}
+
+type User {
+    id: ID!
+    name: String!
+    email: String!
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+type Employee {
+    employeeNumber: ID!
+    lastName: String
+    firstName: String
+    extension: String
+    email: String
+    officeCode: Int
+    reportsTo: Int
+    jobTitle: String
+    manager: Employee @belongsTo(relation: "employee")
+    office: Office @belongsTo
+
+}
+
+type Office {
+    officeCode: ID!
+    city: String
+    phone: String
+    addressLine1: String
+    addressLine2: String
+    state: String
+    country:String
+    postalCode: String
+    territory: String
+    employees: [Employee] @hasMany
+}
